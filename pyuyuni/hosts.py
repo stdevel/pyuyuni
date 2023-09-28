@@ -9,4 +9,7 @@ def list_systems_requiring_reboot(api_client):
     _result = api_client.query(
         "system/listSuggestedReboot"
     )
-    return _result["result"]
+    _systems = []
+    for _system in _result["result"]:
+        _systems.append(_system["name"])
+    return _systems
