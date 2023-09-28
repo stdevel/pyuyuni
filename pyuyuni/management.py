@@ -69,7 +69,7 @@ class JSONHTTPClient:
         self.password = password
 
         # start session
-        self._cookie = None
+        self._session = None
         self._connect()
 
 
@@ -97,9 +97,36 @@ class JSONHTTPClient:
                 raise InvalidCredentialsException("Username/password combination is invalid")
             if not _cookies['pxt-session-cookie']:
                 raise SessionException("Didn't receive a valid cookie")
+        except ssl.SSLCertVerificationError as err:
+            self.LOGGER.error(err)
+            raise SSLCertVerificationError(str(err)) from err
 
-            # set cookie
-            self._cookie = _cookies['pxt-session-cookie']
+
+    def query(self, url, params="", headers=HEADERS, method="get"):
+        """
+        Method to send a query to the API
+        """
+        _method = method.lower()
+        try:
+            if _method == "get":
+                _result = self._session.get(
+                    f"{self.url}/{url}",
+                    data=params,
+                    headers=headers,
+                    verify=self.verify
+                )
+            elif _method == "post":
+                _result = self._session.post(
+                    url,
+                    json=params,
+                    headers=headers,
+                    verify=self.verify
+                )
+            if _result.status_code not in [200, 201]:
+                raise SessionException("Unsuccessful query")
+
+            return json.loads(_result.text)
+
         except ssl.SSLCertVerificationError as err:
             self.LOGGER.error(err)
             raise SSLCertVerificationError(str(err)) from err

@@ -3,9 +3,11 @@ Login tests
 """
 import logging
 import pytest
+import json
 from pyuyuni.management import JSONHTTPClient
 from pyuyuni.exceptions import (
-    InvalidCredentialsException
+    InvalidCredentialsException,
+    SessionException
 )
 from .utilities import load_config
 
@@ -18,16 +20,16 @@ def config():
 
 
 @pytest.fixture(scope='session')
-def api_client(config_file):
+def api_client(config):
     """
     Instance client
     """
     return JSONHTTPClient(
         logging.ERROR,
-        config_file["config"]["hostname"],
-        config_file["config"]["username"],
-        config_file["config"]["password"],
-        port=config_file["config"]["port"],
+        config["config"]["hostname"],
+        config["config"]["username"],
+        config["config"]["password"],
+        port=config["config"]["port"],
         verify=False
     )
 
@@ -58,4 +60,25 @@ def test_invalid_login(config):
             "paulapinkepank",
             port=config["config"]["port"],
             verify=False
+        )
+
+
+def test_valid_query(api_client):
+    """
+    Ensure that valid queries can be executed
+    """
+    _result = api_client.query(
+        "system/listSystems"
+    )
+    assert _result["success"]
+    assert _result["result"]
+
+
+def test_invalid_query(api_client):
+    """
+    Ensure that invalid queries can't be executed
+    """
+    with pytest.raises(SessionException):
+        _result = api_client.query(
+            "hurrdurr/api_goes_brrr"
         )
