@@ -1,0 +1,59 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+Vagrant.configure("2") do |config|
+  # box definitions
+  vm_box      = "opensuse/Leap-15.4.x86_64"
+  vm_version  = "~> 15.4"
+
+  # uyuni host
+  config.vm.define "uyuni_server" do |uyuni|
+    uyuni.vm.hostname = "uyuni.local.loc"
+    uyuni.vm.box = vm_box
+    uyuni.vm.box_version = vm_version
+    # forward some ports
+    uyuni.vm.network "forwarded_port", guest: 80, host: 8080
+    uyuni.vm.network "forwarded_port", guest: 443, host: 8443
+    # add private network
+    uyuni.vm.network "private_network", ip: "192.168.56.10"
+    # set CPU and memory
+    uyuni.vm.provider "virtualbox" do |vb|
+      vb.cpus = "2"
+      vb.memory = "8192"
+    end
+    uyuni.vm.provider :libvirt do |libvirt|
+      libvirt.cpus = "2"
+      libvirt.memory = "8192"
+      libvirt.qemu_use_session = false
+    end
+    # configure system
+    uyuni.vm.provision "ansible" do |ansible|
+      ansible.playbook = "uyuni.yml"
+    end
+  end
+
+
+
+  # client host
+  config.vm.define "uyuni_client" do |client|
+    client.vm.hostname = "client.local.loc"
+    client.vm.box = vm_box
+    client.vm.box_version = vm_version
+    # add private network
+    client.vm.network "private_network", ip: "192.168.56.100"
+    # set CPU and memory
+    client.vm.provider "virtualbox" do |vb|
+      vb.cpus = "2"
+      vb.memory = "2048"
+    end
+    client.vm.provider :libvirt do |libvirt|
+      libvirt.cpus = "2"
+      libvirt.memory = "2048"
+      libvirt.qemu_use_session = false
+    end
+    # configure system
+    client.vm.provision "ansible" do |ansible|
+      ansible.playbook = "client.yml"
+    end
+  end
+
+end

@@ -1,0 +1,4 @@
+---
+collections:
+  - name: stdevel.uyuni
+    version: 0.1.1
