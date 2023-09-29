@@ -1,0 +1,27 @@
+---
+- name: Prepare client
+  hosts: client
+  become: true
+  pre_tasks:
+    - name: "Update /etc/hosts"
+      ansible.builtin.template:
+        src: "files/hosts"
+        dest: /etc/hosts
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Configure NTP
+      block:
+        - name: Install chrony
+          community.general.zypper:
+            name: chrony
+
+        - name: Enable service
+          ansible.builtin.service:
+            name: chronyd
+            state: started
+            enabled: true
+        - name: Set timezone
+          community.general.timezone:
+            name: Europe/Berlin

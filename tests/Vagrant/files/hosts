@@ -1,0 +1,7 @@
+# generateHosts = false
+127.0.0.1       localhost
+# special IPv6 addresses
+::1             localhost ipv6-localhost ipv6-loopback
+
+192.168.56.10   uyuni.local.loc uyuni
+192.168.56.100  client.local.loc client

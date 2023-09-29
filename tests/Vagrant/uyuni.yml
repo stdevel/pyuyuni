@@ -1,0 +1,38 @@
+---
+- name: Install and configure Uyuni
+  hosts: uyuni
+  become: true
+  pre_tasks:
+    - name: Set hostname
+      block:
+        - name: Set (short) hostname
+          ansible.builtin.hostname:
+            name: uyuni
+
+        - name: Update /etc/hosts
+          ansible.builtin.lineinfile:
+            path: /etc/hosts
+            regexp: '^127.0.0.1'
+            line: '127.0.0.1 localhost uyuni.local.loc uyuni'
+
+    - name: Remove package manager locks (required for Vagrantbox)
+      ansible.builtin.command: zypper rl "{{ item }}"
+      register: zypper_out
+      changed_when: "'successfully removed' in zypper_out.stdout"
+      loop:
+        - snapper
+        - snapper-zypp-plugin
+
+    - name: Install required packages
+      community.general.zypper:
+        name:
+          - snapper
+          - snapper-zypp-plugin
+
+  roles:
+    - role: stdevel.uyuni
+      uyuni_use_lvm: false
+      uyuni_enable_monitoring: true
+      uyuni_install_monitoring_formulas: true
+      uyuni_release: '2023.04'
+      uyuni_firewall_config: true

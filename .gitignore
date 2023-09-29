@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Test configurations
+uyuni_config*.yml
+
+# Vagrant files
+.vagrant

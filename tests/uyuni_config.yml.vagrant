@@ -1,0 +1,6 @@
+---
+config:
+  hostname: 192.168.56.10
+  username: admin
+  password: admin
+  port: 443
